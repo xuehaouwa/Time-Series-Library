@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from utils.timefeatures import time_features
 from data_provider.m4 import M4Dataset, M4Meta
 from data_provider.uea import subsample, interpolate_missing, Normalizer
-from sktime.utils import load_data
+# from sktime.utils import load_data
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -552,6 +552,7 @@ class SWATSegLoader(Dataset):
         train_data = pd.read_csv(os.path.join(root_path, 'swat_train2.csv'))
         test_data = pd.read_csv(os.path.join(root_path, 'swat2.csv'))
         labels = test_data.values[:, -1:]
+        train_labels = train_data.values[:, -1:]
         train_data = train_data.values[:, :-1]
         test_data = test_data.values[:, :-1]
 
@@ -562,6 +563,7 @@ class SWATSegLoader(Dataset):
         self.test = test_data
         self.val = test_data
         self.test_labels = labels
+        self.train_labels = train_labels
         print("test:", self.test.shape)
         print("train:", self.train.shape)
 
@@ -581,7 +583,7 @@ class SWATSegLoader(Dataset):
     def __getitem__(self, index):
         index = index * self.step
         if self.flag == "train":
-            return np.float32(self.train[index:index + self.win_size]), np.float32(self.test_labels[0:self.win_size])
+            return np.float32(self.train[index:index + self.win_size]), np.float32(self.train_labels[0:self.win_size])
         elif (self.flag == 'val'):
             return np.float32(self.val[index:index + self.win_size]), np.float32(self.test_labels[0:self.win_size])
         elif (self.flag == 'test'):
@@ -712,3 +714,11 @@ class UEAloader(Dataset):
 
     def __len__(self):
         return len(self.all_IDs)
+
+
+if __name__ == "__main__":
+    a = SWATSegLoader(root_path='/home/xuehao/Downloads/SWaT', win_size=100, step=1, flag="train")
+    b, c = a.__getitem__(1)
+    print(b.shape, c.shape)
+    print(c)
+
